@@ -236,3 +236,9 @@ const bool operator!=(Array<T>& array, Array<T>& other)
 {
     return !(operator==(array,other));
 }
+
+template <typename T>
+Array<T>::~Array<T>()
+{
+    delete [] head;
+}

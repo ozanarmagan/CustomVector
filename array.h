@@ -13,6 +13,7 @@ class Array
         Array(int capacity = 10000);
         Array(std::vector<T> arry,int capacity = 10000);
         Array(Array<T> &other);
+        ~Array();
         int inline getSize() const { return size; };
         int inline getCapacity() const { return capacity; };
         void clear();
