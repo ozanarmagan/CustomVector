@@ -7,11 +7,18 @@ Array<T>::Array(int capacity) : capacity(capacity),size(0)
 }
 
 template <typename T>
-Array<T>::Array(std::vector<T> arry,int capacity) : capacity(capacity),size(0)
+Array<T>::Array(std::vector<T> arry) : capacity(10000),size(0)
 {
     head = new T[capacity];
     for(T element : arry)
         add(element);
+}
+
+
+template <typename T>
+Array<T>::Array() : capacity(10000),size(0)
+{
+    head = new T[capacity];
 }
 
 template <typename T>
@@ -63,10 +70,10 @@ void Array<T>::insert(T element,int index)
 {
     if(isFull())
         increaseCapacity();
-    if(index >= size)
+    if(index >= size || index < 0)
         return;
-    for(int i = index;i < size;i++)
-        head[i+1] = head[i];
+    for(int i = size;i > index;i--)
+        head[i] = head[i-1];
     head[index] = element;
     size++;
 }
@@ -75,7 +82,7 @@ void Array<T>::insert(T element,int index)
 template <typename T>
 void Array<T>::swap(int index1,int index2)
 {
-    if(index1 >= size || index2 >= size)
+    if(index1 >= size || index2 >= size || index1 < 0 || index2 < 0)
         return;
     T temp; 
     temp = head[index1];
@@ -110,9 +117,18 @@ void Array<T>::sort()
 }
 
 template <typename T>
+void Array<T>::reverse()
+{
+    int start = 0, end = size - 1;
+    while(start < end)
+        swap(start++,end--);
+}
+
+
+template <typename T>
 void Array<T>::removeRange(int start,int end)
 {
-    if(start > end)
+    if(start > end || end >= size || end < 0 || start >= size || start < 0 )
         return;
     for(int i = 0; i < size - end;i++)
         head[start + i] = head[end + i];
@@ -120,7 +136,7 @@ void Array<T>::removeRange(int start,int end)
 }
 
 template <typename T>
-Array<T> Array<T>::subArray(const int start,const int end)
+Array<T>& Array<T>::subArray(const int start,const int end)
 {
     Array<T> result(end - start);
     for(int i = start;i < end;i++)
@@ -155,6 +171,26 @@ int Array<T>::count(const T element)
         if(head[i] == element)
             count++;
     return count;
+}
+
+
+template <typename T>
+int Array<T>::firstIndexOf(const T element)
+{
+    for(int i = 0;i < size;i++)
+        if(head[i] == element)
+            return i;
+    return -1;
+}
+
+template <typename T>
+int Array<T>::lastIndexOf(const T element)
+{
+    int lastIndex = -1;
+    for(int i = 0;i < size;i++)
+        if(head[i] == element)
+            lastIndex = i;
+    return lastIndex;
 }
 
 template <typename T>
@@ -198,10 +234,16 @@ Array<T> Array<T>::operator[](std::array<int,2> points)
 }
 
 template <typename T>
-void Array<T>::removeIf(std::function<bool(T)> func)
+T& Array<T>::operator[](int i)
+{
+    return head[i];
+}
+
+template <typename T>
+void Array<T>::removeIf(std::function<bool(T)> lambda)
 {
     for(int i = 0;i < size;i++)
-        if(func(head[i]))
+        if(lambda(head[i]))
         {
             remove(head[i]);
             i = -1;
@@ -210,13 +252,41 @@ void Array<T>::removeIf(std::function<bool(T)> func)
 
 
 template <typename T>
-Array<T> Array<T>::select(std::function<bool(T)> func)
+void Array<T>::removeIndex(int index)
+{
+    if(index < 0 || index >= size)
+        return;
+    for(size--;index < size;index++)
+        head[index] = head[index + 1];
+    
+}
+
+template <typename T>
+Array<T> Array<T>::select(std::function<bool(T)> lambda)
 {
     Array<T> result;
     for(int i = 0;i < size;i++)
-        if(func(head[i]))
+        if(lambda(head[i]))
             result.add(head[i]);
     return result;
+}
+
+template <typename T>
+void Array<T>::sort(std::function<bool(T,T)> lambda)
+{
+    bool completed = false;
+    while(!completed)
+    {
+        completed = true;
+        for(int i = 0;i < size - 1;i++)
+        {
+            if(!lambda(head[i],head[i+1]))
+            {
+                swap(i,i+1);
+                completed = false;
+            }
+        }
+    }
 }
 
 template <typename T>
@@ -241,4 +311,14 @@ template <typename T>
 Array<T>::~Array<T>()
 {
     delete [] head;
+}
+
+template <typename T>
+void Array<T>::operator=(const Array<T>& other) 
+{
+    delete [] head;
+    size = other.getSize();
+    head = new T[other.getCapacity()];
+    for(int i = 0;i < size;i++)
+        head[i] = other.head[i];
 }
